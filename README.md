@@ -20,17 +20,16 @@ Basic usage
 
 ```php
 
-require 'Csob.php';
+require __DIR__ . '/Csob.php';
 
 $production = false;
 $merchantId = 'A1029DTmM7';
-$privateKey = __DIR__ .'/test_keys/rsa_A1029DTmM7.key';
-$publicKey = __DIR__ .'/test_keys/mips_iplatebnibrana.csob.cz.pub'; // This public key used for all test keys
+$privateKey = __DIR__ .'/keys/test/rsa_A1029DTmM7.key';
 
-$orderId = 123;
+$orderId = time(); // Here you should put your real order ID
 $amount = 50;
 
-$csob = new payment\csob\Csob($merchantId, $privateKey, $publicKey, $production);
+$csob = new payment\csob\Csob($merchantId, $privateKey, $production);
 
 $csob->setDescription('Some description')
 	->setOrderId($orderId)

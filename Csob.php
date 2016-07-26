@@ -31,13 +31,6 @@ class Csob
      */
     protected $privateKeyFile;
     /**
-     * Path to publicKey file
-     *
-     * @var string
-     */
-    protected $publicKeyFile;
-
-    /**
      * @var array
      */
     protected $cart = [];
@@ -69,14 +62,12 @@ class Csob
     /**
      * @param string $merchantId
      * @param string $privateKeyFile
-     * @param string $publicKeyFile
      * @param bool   $production
      */
-    public function __construct($merchantId, $privateKeyFile, $publicKeyFile, $production)
+    public function __construct($merchantId, $privateKeyFile, $production)
     {
         $this->merchantId = $merchantId;
         $this->privateKeyFile = $privateKeyFile;
-        $this->publicKeyFile = $publicKeyFile;
         $this->production = $production;
     }
 
@@ -376,13 +367,17 @@ class Csob
             $text = $text  . "|" . $response ['merchantData'];
         }
 
-//        $text = $this->createSignString($response);
+        if ($this->production) {
+            $publicKeyFile = __DIR__ . '/keys/mips_platebnibrana.csob.cz.pub';
+        } else {
+            $publicKeyFile = __DIR__ . '/keys/mips_iplatebnibrana.csob.cz.pub';
+        }
 
-        $fp = fopen ( $this->publicKeyFile, "r" );
+        $fp = fopen ( $publicKeyFile, "r" );
         if (! $fp) {
             throw new \Exception('Public key not found');
         }
-        $public = fread ( $fp, filesize ( $this->publicKeyFile ) );
+        $public = fread ( $fp, filesize ( $publicKeyFile ) );
         fclose ( $fp );
         $publicKeyId = openssl_get_publickey ( $public );
         $signature = base64_decode ( $signatureBase64 );
