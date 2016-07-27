@@ -114,6 +114,8 @@ class Csob
             throw new \Exception('Description is required');
         }
 
+        $currency = strtoupper($currency);
+
         $data = [
             'merchantId'   => $this->merchantId,
             'orderNo'      => $this->orderId,
@@ -135,6 +137,29 @@ class Csob
 
         if ($response && $response['resultCode'] == 0 && $response['paymentStatus'] == 1) {
             return $response['payId'];
+        } else {
+            throw new \Exception($response['resultMessage']);
+        }
+	}
+
+    /**
+     * @param string $payId
+     *
+     * @return string
+     * @throws \Exception
+     */
+    public function reverse($payId)
+    {
+        $data = [
+            'merchantId' => $this->merchantId,
+            'payId'      => $payId,
+            'dttm'       => date('YmdHis'),
+        ];
+
+        $response = $this->connect('reverse', $data);
+
+        if ($response && $response['resultCode'] == 0 && $response['paymentStatus'] == 5) {
+            return true;
         } else {
             throw new \Exception($response['resultMessage']);
         }
@@ -264,9 +289,11 @@ class Csob
     {
         $postData['signature'] = $this->sign($this->createSignString($postData));
 
+        $httpMethod = $action === 'reverse' ? 'PUT' : 'POST';
+
         $ch = curl_init($this->getBaseUrl() . $action);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $httpMethod);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_POST, true);
